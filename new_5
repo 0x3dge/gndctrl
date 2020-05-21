@@ -1,3 +1,12 @@
+##################################################
+# new condensed build guide, 5/20/20
+# Can be easily converted to a git-able deploy script.
+# Probably can just copy the config files into the respective directories.  Need to verify on next install pass.
+##################################################
+#
+#
+#
+# install packages
 sudo apt-get install -y minicom gpsd gpsd-clients
 sudo apt-get install -y debhelper dh-systemd librtlsdr-dev libusb-1.0-0-dev
 sudo apt-get install -y git pkg-config libncurses5-dev lighttpd libbladerf-dev libfam0
@@ -6,12 +15,39 @@ sudo apt-get install -y libboost-regex-dev libboost-filesystem-dev libsoapysdr-d
 sudo apt-get install -y rtl-sdr
 sudo apt-get install -y jq p7zip-full
 sudo apt-get install -y libncurses5 wavemon
-
-
-
-
+sudo apt-get install -y mc tilde
+#
+#####################
+#install Dump1090-FA
+#####################
 git clone https://github.com/flightaware/dump1090.git dump1090-fa
 cd dump1090-fa
 sudo dpkg-buildpackage -b
 cd ..
 sudo dpkg -i dump1090-fa_*_*.deb
+sudo nano /etc/default/dump1090-fa
+# in dump1090-fa config file, set device serial number and set --net-ri-port
+# device serial number can be gathered from "sudo rtl_test".  better to bind to serial number than dongle number for usb portability.
+#
+#####################
+#install dump978 
+# *** NOTE: This step can be skipped if not using a 2nd 978mhz receiver for UAT traffic.
+#####################
+git clone https://github.com/mutability/dump978 dump978
+cd dump978
+make
+#Move files to a location of choice?  Will need uat2esnt 
+sudo cp -r dump978 /usr/bin/
+
+#
+#####################
+#install tar1090
+#####################
+sudo restart
+# (tar1090 install will fail without a restart after dump1090-fa and dump978)
+git clone https://github.com/wiedehopf/tar1090 tar1090
+cd tar1090
+sudo ./install
+#
+#
+#edit tar1090/html/config.js and set default lat/lon,  PageName, 
