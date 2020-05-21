@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Launcher for dump978 feeder into dump1090-fa listener on port 30001.
+# Listener must be set up using --net-ri-port 30001 in /etc/default/dump1090-fa
+
+# rtl_sdr receiver interface is set with -d (1 = dongle 1, determine with rtl_test)
+# rtl_sdr trailing "-" directs output to console, which is then piped to dump978 for interpretation,
+# which is then piped to uat2esnt for conversion, which is then piped to nc and sent into dump1090-fa on 127.0.0.1:30001.
+# it looks weird but don't modify else it won't relay the signal.  
+
+rtl_sdr -f 978000000 -s 2083334 -g 48 -d 1 - | /usr/bin/dump978/dump978 | /usr/bin/dump978/uat2esnt | /bin/nc 127.0.0.1 30001
