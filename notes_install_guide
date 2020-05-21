@@ -7,14 +7,21 @@
 #
 #
 # install packages
+# gps tools:
 sudo apt-get install -y minicom gpsd gpsd-clients
+# for dump1090-fa:
 sudo apt-get install -y debhelper dh-systemd librtlsdr-dev libusb-1.0-0-dev
 sudo apt-get install -y git pkg-config libncurses5-dev lighttpd libbladerf-dev libfam0
+# for dump978-fa (may not be needed anymore, not sure)
 sudo apt-get install -y libboost-system-dev libboost-program-options-dev 
 sudo apt-get install -y libboost-regex-dev libboost-filesystem-dev libsoapysdr-dev
+# for dump978: (necessary)
 sudo apt-get install -y rtl-sdr
+# for tar1090:
 sudo apt-get install -y jq p7zip-full
+# for wifi:
 sudo apt-get install -y libncurses5 wavemon
+# for aaron:
 sudo apt-get install -y mc tilde
 #
 #####################
@@ -38,16 +45,38 @@ cd dump978
 make
 #Move files to a location of choice?  Will need uat2esnt 
 sudo cp -r dump978 /usr/bin/
-
 #
 #####################
 #install tar1090
 #####################
 sudo restart
-# (tar1090 install will fail without a restart after dump1090-fa and dump978)
+# (tar1090 install will fail without a restart after multiple package installs or installing dump1090-fa and dump978)
 git clone https://github.com/wiedehopf/tar1090 tar1090
 cd tar1090
 sudo ./install
 #
 #
 #edit tar1090/html/config.js and set default lat/lon,  PageName, 
+#create service entry for dump978
+sudo mkdir /usr/share/dump978
+sudo cp /usr/share/dump1090-fa/start-dump1090-fa /usr/share/dump978/start-dump978
+sudo cp /lib/systemd/system/dump1090-fa.service /lib/systemd/system/dump978.service
+#
+# reboot to update daemon manager w/ new service.  
+sudo restart
+#
+#####################
+# Testing:
+#
+# cgps will display GPS receiver stats, if functioning.
+#
+# browse to http://localhost/tar1090
+# web server should be up.
+# 
+# To see if dump1090 is receiving data,
+# nc 127.0.0.1 30002
+# 30001 is a listener to accept raw input data
+# 30002 is a realtime data output from dump1090
+#
+#
+
