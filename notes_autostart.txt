@@ -1,0 +1,41 @@
+pi@GroundCtrl:~/.config/autostart $ more cgps.desktop
+[Desktop Entry]
+Type=Application
+Name=CGPS
+NoDisplay=false
+Exec=lxterminal -e /usr/bin/cgps -s
+
+pi@GroundCtrl:~/.config/autostart $
+
+
+
+pi@GroundCtrl:~/.config/autostart $ ls
+cgps.desktop  tar1090vwr.desktop  view1090.desktop
+
+
+pi@GroundCtrl:~/.config/autostart $ more tar1090vwr.desktop
+[Desktop Entry]
+Type=Application
+Name=tar1090vwr
+NoDisplay=false
+Exec=chromium-browser http://localhost/tar1090/
+
+pi@GroundCtrl:~/.config/autostart $
+
+
+
+pi@GroundCtrl:~/.config/autostart $ more view1090.desktop
+[Desktop Entry]
+Type=Application
+Name=view1090
+NoDisplay=false
+Exec=lxterminal -e /home/pi/Downloads/dump1090-fa/view1090
+
+pi@GroundCtrl:~/.config/autostart $
+
+
+
+pi@GroundCtrl:~/.config/autostart $ more /etc/hostname
+GroundCtrl
+pi@GroundCtrl:~/.config/autostart $
+
