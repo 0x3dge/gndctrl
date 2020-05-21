@@ -1,0 +1,17 @@
+sudo apt-get install -y minicom gpsd gpsd-clients
+sudo apt-get install -y debhelper dh-systemd librtlsdr-dev libusb-1.0-0-dev
+sudo apt-get install -y git pkg-config libncurses5-dev lighttpd libbladerf-dev libfam0
+sudo apt-get install -y libboost-system-dev libboost-program-options-dev 
+sudo apt-get install -y libboost-regex-dev libboost-filesystem-dev libsoapysdr-dev
+sudo apt-get install -y rtl-sdr
+sudo apt-get install -y jq p7zip-full
+sudo apt-get install -y libncurses5 wavemon
+
+
+
+
+git clone https://github.com/flightaware/dump1090.git dump1090-fa
+cd dump1090-fa
+sudo dpkg-buildpackage -b
+cd ..
+sudo dpkg -i dump1090-fa_*_*.deb

@@ -1,0 +1,253 @@
+./dump1090 --freq 978
+./dump1090 --device stx:1090:0
+
+rtl_test for device id's
+
+
+dump1090-fa options:
+more /etc/default/dump1090-fa
+set the following:
+RECEIVER_OPTIONS="--device stx:1090:0 --gain -10 --ppm 0"
+(should just need to change the device argument)
+
+/usr/share/dump1090-fa/start-dum
+
+978 tuner serial:
+stx:978:0
+stx:1090:0
+
+./dump978-fa --sdr driver=rtlsdr,serial=stx:978:0 --raw-stdout
+
+/etc/default/dump978-fa
+
+sudo mkdir /usr/share/skyaware978
+sudo mkdir /usr/share/skyawaware978/html
+sudo cp -r ~/dump978-fa/skyaware /usr/share/skyaware978/html
+
+
+#####################
+
+pi@raspberrypi:~ $ more /lib/systemd/system/dump978-fa.service
+# dump978-fa service for systemd
+
+[Unit]
+Description=dump978 ADS-B UAT receiver
+Documentation=https://flightaware.com/adsb/piaware/
+Wants=network.target
+After=network.target
+
+[Service]
+User=dump978
+ExecStart=/usr/share/dump978-fa/start-dump978-fa
+SyslogIdentifier=dump978-fa
+Type=simple
+Restart=on-failure
+RestartSec=30
+RestartPreventExitStatus=64
+Nice=-5
+
+[Install]
+WantedBy=default.target
+#####################
+
+
+pi@raspberrypi:~/dump1090-fa $ more /etc/default/dump1090-fa
+# dump1090-fa configuration
+# This is sourced by /usr/share/dump1090-fa/start-dump1090-fa as a
+# shellscript fragment.
+
+# If you are using a PiAware sdcard image, this config file is regenerated
+# on boot based on the contents of piaware-config.txt; any changes made to this
+# file will be lost.
+
+# dump1090-fa won't automatically start unless ENABLED=yes
+ENABLED=yes
+
+RECEIVER_OPTIONS="--device stx:1090:0 --gain -10 --ppm 0"
+DECODER_OPTIONS="--max-range 360 --fix"
+NET_OPTIONS="--net --net-heartbeat 60 --net-ro-size 1300 --net-ro-interval 0.2 --net-ri-port 30001 --net-ro-port 30002 --net-sbs-port 30003 --net-bi-port 300
+04,30104 --net-bo-port 30005"
+JSON_OPTIONS="--json-location-accuracy 1"
+
+pi@raspberrypi:~ $ /home/pi/dump978-fa/dump978-fa --sdr driver=rtlsdr,serial=stx:978:0 --raw-stdout | /home/pi/dump978/uat2esnt | /bin/nc -q1 127.0.0.1 30001
+usb_claim_interface error -6
+Detached kernel driver
+Found Rafael Micro R820T tuner
+Reattached kernel driver
+Detached kernel driver
+Found Rafael Micro R820T tuner
+Exact sample rate is: 2083333.135571 Hz
+[R82XX] PLL not locked!
+SoapySDR: using maximum manual gain 49.6 dB
+SoapySDR: using stream setting buffsize=262144
+Allocating 15 zero-copy buffers
+^CCaught signal 2, exiting
+Reattached kernel driver
+Abnormal exit
+
+############################
+git clone https://github.com/mutability/dump978 dump978
+(this is original dump978 and not the -fa mod version.  -fa mod version DOES NOT include helper apps, incl uat2esnt
+cd dump978
+make
+############################
+
+
+pi@raspberrypi:~ $ cd dump978
+pi@raspberrypi:~/dump978 $ ls
+dump978    extract_nexrad    fec    fec.o        Makefile        reader.h   sample-data.txt.gz  uat2esnt.o  uat2json.o  uat2text.o    uat_decode.o
+dump978.c  extract_nexrad.c  fec.c  fec_tests.c  plot_nexrad.py  reader.o   uat2esnt            uat2json    uat2text    uat_decode.c  uat.h
+dump978.o  extract_nexrad.o  fec.h  LICENSE      reader.c        README.md  uat2esnt.c          uat2json.c  uat2text.c  uat_decode.h
+pi@raspberrypi:~/dump978 $ /home/pi/dump978-fa/dump978-fa --sdr driver=rtlsdr,serial=stx:978:0 --raw-stdout | /home/pi/dump978/uat2esnt | /bin/nc -q1 127.0.01 30001
+
+
+############################
+
+
+pi@raspberrypi:~ $ cd dump1090-fa
+pi@raspberrypi:~/dump1090-fa $ dump1090-fa --help
+-----------------------------------------------------------------------------
+| dump1090 ModeS Receiver                                 dump1090-fa 3.8.1 |
+| build options: ENABLE_RTLSDR ENABLE_BLADERF SC16Q11_TABLE_BITS=8          |
+-----------------------------------------------------------------------------
+
+--device-type <type>     Select SDR type (default: rtlsdr)
+
+      rtlsdr-specific options (use with --device-type rtlsdr)
+
+--device <index|serial>  select device by index or serial number
+--enable-agc             enable digital AGC (not tuner AGC!)
+--ppm <correction>       set oscillator frequency correction in PPM
+--direct <0|1|2>         set direct sampling mode
+
+      bladeRF-specific options (use with --device-type bladerf)
+
+--device <ident>         select device by bladeRF 'device identifier'
+--bladerf-fpga <path>    use alternative FPGA bitstream ('' to disable FPGA load)
+--bladerf-decimation <N> assume FPGA decimates by a factor of N
+--bladerf-bandwidth <hz> set LPF bandwidth ('bypass' to bypass the LPF)
+
+      ifile-specific options (use with --ifile)
+
+--ifile <path>           read samples from given file ('-' for stdin)
+--iformat <type>         set sample format (UC8, SC16, SC16Q11)
+--throttle               process samples at the original capture speed
+
+      Common options
+
+--gain <db>              Set gain (default: max gain. Use -10 for auto-gain)
+--freq <hz>              Set frequency (default: 1090 Mhz)
+--interactive            Interactive mode refreshing data on screen. Implies --throttle
+--interactive-ttl <sec>  Remove from list if idle for <sec> (default: 60)
+--raw                    Show only messages hex values
+--net                    Enable networking
+--modeac                 Enable decoding of SSR Modes 3/A & 3/C
+--no-modeac-auto         Don't enable Mode A/C if requested by a Beast connection
+--net-only               Enable just networking, no RTL device or file used
+--net-bind-address <ip>  IP address to bind to (default: Any; Use 127.0.0.1 for private)
+--net-ri-port <ports>    TCP raw input listen ports  (default: 30001)
+--net-ro-port <ports>    TCP raw output listen ports (default: 30002)
+--net-sbs-port <ports>   TCP BaseStation output listen ports (default: 30003)
+--net-bi-port <ports>    TCP Beast input listen ports  (default: 30004,30104)
+--net-bo-port <ports>    TCP Beast output listen ports (default: 30005)
+--net-ro-size <size>     TCP output minimum size (default: 0)
+--net-ro-interval <rate> TCP output memory flush rate in seconds (default: 0)
+--net-heartbeat <rate>   TCP heartbeat rate in seconds (default: 60 sec; 0 to disable)
+--net-buffer <n>         TCP buffer size 64Kb * (2^n) (default: n=0, 64Kb)
+--net-verbatim           Make Beast-format output connections default to verbatim mode
+                         (forward all messages, without applying CRC corrections)
+--forward-mlat           Allow forwarding of received mlat results to output ports
+--lat <latitude>         Reference/receiver latitude for surface posn (opt)
+--lon <longitude>        Reference/receiver longitude for surface posn (opt)
+--max-range <distance>   Absolute maximum range for position decoding (in nm, default: 300)
+--fix                    Enable single-bits error correction using CRC
+                         (specify twice for two-bit error correction)
+--no-fix                 Disable error correction using CRC
+--no-crc-check           Disable messages with broken CRC (discouraged)
+--mlat                   display raw messages in Beast ascii mode
+--stats                  With --ifile print stats at exit. No other output
+--stats-range            Collect/show range histogram
+--stats-every <seconds>  Show and reset stats every <seconds> seconds
+--onlyaddr               Show only ICAO addresses (testing purposes)
+--metric                 Use metric units (meters, km/h, ...)
+--gnss                   Show altitudes as HAE/GNSS (with H suffix) when available
+--snip <level>           Strip IQ file removing samples < level
+--debug <flags>          Debug mode (verbose), see README for details
+--quiet                  Disable output to stdout. Use for daemon applications
+--show-only <addr>       Show only messages from the given ICAO on stdout
+--write-json <dir>       Periodically write json output to <dir> (for serving by a separate webserver)
+--write-json-every <t>   Write json output every t seconds (default 1)
+--json-location-accuracy <n>  Accuracy of receiver location in json metadata: 0=no location, 1=approximate, 2=exact
+--dcfilter               Apply a 1Hz DC filter to input data (requires more CPU)
+--help                   Show this help
+
+Debug mode flags: d = Log frames decoded with errors
+                  D = Log frames decoded with zero errors
+                  c = Log frames with bad CRC
+                  C = Log frames with good CRC
+                  p = Log frames with bad preamble
+                  n = Log network debugging info
+                  j = Log frames to frames.js, loadable by debug.html
+pi@raspberrypi:~/dump1090-fa $
+
+REFERENCE: https://www.adsbexchange.com/how-to-feed/adding-978-mhz-ads-b-capability-to-your-pipi2/
+https://discussions.flightaware.com/t/ads-b-1090-and-978-on-a-single-pi/44534/16
+https://discussions.flightaware.com/t/piaware-3-x-and-dump978/19039/14
+https://github.com/mutability/dump978#uat2esnt-convert-uat-ads-b-messages-to-mode-s-ads-b-messages
+
+
+Update /etc/default/dump1090-fa config to include --net-ri-port 30001
+
+pi@raspberrypi:~ $ more /etc/default/dump1090-fa
+# dump1090-fa configuration
+# This is sourced by /usr/share/dump1090-fa/start-dump1090-fa as a
+# shellscript fragment.
+
+# If you are using a PiAware sdcard image, this config file is regenerated
+# on boot based on the contents of piaware-config.txt; any changes made to this
+# file will be lost.
+
+# dump1090-fa won't automatically start unless ENABLED=yes
+ENABLED=yes
+
+RECEIVER_OPTIONS="--device stx:1090:0 --gain -10 --ppm 0"
+DECODER_OPTIONS="--max-range 360 --fix"
+NET_OPTIONS="--net --net-heartbeat 60 --net-ro-size 1300 --net-ro-interval 0.2 --net-ri-port 30001 --net-ro-port 30002 --net-sbs-port 30003 --net-bi-port 30004,30
+104 --net-bo-port 30005"
+JSON_OPTIONS="--json-location-accuracy 1"
+pi@raspberrypi:~ $
+
+
+
+FEEDER SCRIPT FOR 978:
+ /home/pi/dump978-fa/dump978-fa --sdr driver=rtlsdr,serial=stx:978:0 --raw-stdout | /home/pi/dump978/uat2esnt | nc -q1 localhost 30001
+
+
+cp /usr/share/dump978-fa/start-dump978-fa /usr/share/dump978-fa/start-dump978-fa.orig 
+add feeder script to start-dump978-fa instead of service start.  No quotes.
+
+Should now look like:
+pi@raspberrypi:~ $ service dump978-fa status
+● dump978-fa.service - dump978 ADS-B UAT receiver
+   Loaded: loaded (/lib/systemd/system/dump978-fa.service; enabled; vendor preset: enabled)
+   Active: active (running) since Wed 2020-05-20 00:28:08 PDT; 2min 24s ago
+     Docs: https://flightaware.com/adsb/piaware/
+ Main PID: 459 (start-dump978-f)
+    Tasks: 6 (limit: 4915)
+   Memory: 27.6M
+   CGroup: /system.slice/dump978-fa.service
+           ├─459 /bin/sh /usr/share/dump978-fa/start-dump978-fa
+           ├─465 /home/pi/dump978-fa/dump978-fa --sdr driver=rtlsdr,serial=stx:978:0 --raw-stdout
+           └─466 /home/pi/dump978/uat2esnt
+
+May 20 00:28:10 raspberrypi dump978-fa[459]: Detached kernel driver
+May 20 00:28:10 raspberrypi dump978-fa[459]: Found Rafael Micro R820T tuner
+May 20 00:28:10 raspberrypi dump978-fa[459]: Reattached kernel driver
+May 20 00:28:10 raspberrypi dump978-fa[459]: Detached kernel driver
+May 20 00:28:10 raspberrypi dump978-fa[459]: Found Rafael Micro R820T tuner
+May 20 00:28:11 raspberrypi dump978-fa[459]: Exact sample rate is: 2083333.135571 Hz
+May 20 00:28:11 raspberrypi dump978-fa[459]: [R82XX] PLL not locked!
+May 20 00:28:11 raspberrypi dump978-fa[459]: SoapySDR: using maximum manual gain 49.6 dB
+May 20 00:28:11 raspberrypi dump978-fa[459]: SoapySDR: using stream setting buffsize=262144
+May 20 00:28:11 raspberrypi dump978-fa[459]: Allocating 15 zero-copy buffers
+pi@raspberrypi:~ $ more /usr/share/dump978-fa/start-dump978-fa

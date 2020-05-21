@@ -1,0 +1,86 @@
+Setting Up Ground Station
+
+- Clean install of Raspberry Pi
+- Update to latest
+
+
+(**** INSTALL GPS TOOLS **** )
+sudo apt-get update
+sudo apt-get install minicom gpsd gpsd-clients
+
+reboot
+run cgps to test
+
+(**** Installing Dump1090-FA ****)
+
+sourced from:
+https://discussions.flightaware.com/t/version-3-7-0-of-dump1090-fa-piaware/47874
+(3.7.0 was when written.  3.8.1 is latest as of 5/5/20)
+
+sudo apt install -y debhelper dh-systemd librtlsdr-dev libusb-1.0-0-dev 
+sudo apt install -y git pkg-config libncurses5-dev lighttpd libbladerf-dev  
+sudo apt install -y libfam0
+
+
+git clone https://github.com/flightaware/dump1090.git dump1090-fa 
+(last argument is a directory of choice)
+
+cd into source directory (dump1090-fa), then:
+
+sudo dpkg-buildpackage -b
+
+cd ..
+ls
+(note new build packages and .deb files)
+
+sudo dpkg -i dump1090-fa_*_*.deb
+
+
+repeat for dump978-fa 
+
+
+(**** INSTALLING TAR1090 ****)
+
+
+sudo apt install jq
+sudo apt install p7zip-full
+
+
+cd 
+cd Downloads
+git clone https://github.com/wiedehopf/tar1090 tar1090
+
+cd into directory
+sudo ./install.sh
+
+restart
+
+(if tar1090 service hasn't started, rerun "sudo ./install.sh")
+
+http://127.0.0.1/tar1090
+
+********
+5/17
+./dump1090 --freq 978
+./dump1090 --device stx:1090:0
+
+rtl_test for device id's
+
+
+dump1090-fa options:
+more /etc/default/dump1090-fa
+set the following:
+RECEIVER_OPTIONS="--device stx:1090:0 --gain -10 --ppm 0"
+(should just need to change the device argument)
+
+/usr/share/dump1090-fa/start-dum
+
+978 tuner serial:
+stx:978:0
+stx:1090:0
+
+./dump978-fa --sdr driver=rtlsdr,serial=stx:978:0
+
+
+build install output:
+created symlink /etc/systemd/system/default.target.wants/dump978-fa.service /lib/systemd/systemdump978-fa.service

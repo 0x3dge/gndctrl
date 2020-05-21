@@ -1,0 +1,47 @@
+# Disable onboard wifi
+#sudo echo '# Disable wifi, added by gs_install.sh'  >> /boot/config.txt 
+#sudo echo 'dtoverlay=disable-wifi' >> /boot/config.txt
+#
+# Install GPS tools
+sudo apt-get update
+sudo apt-get install -y minicom gpsd gpsd-clients
+#
+#install Dump1090-FA
+sudo apt-get install -y debhelper dh-systemd librtlsdr-dev libusb-1.0.0-dev
+sudo apt-get install -y git pkg-config libncurses5-dev lighttpd libbladerf-dev libfam0
+git clone https://github.com/flightaware/dump1090.git dump1090-fa
+cd dump1090-fa
+sudo dpkg-buildpackage -b
+cd ..
+sudo dpkg -i dump1090-fa_*_*.deb
+#
+#install Dump978-FA
+sudo apt-get install -y libboost-system-dev libboost-program-options-dev libboost-regex-dev libboost-filesystem-dev libsoapysdr-dev
+git clone https://github.com/flightaware/dump978.git dump978-fa
+cd dump978-fa
+sudo dkpg-buildpackage -b
+cd ..
+sudo dpkg -i dump978-fa_*_*.deb
+#
+#install dump978
+git clone https://github.com/mutability/dump978 dump978
+cd dump978
+make
+#
+#MANUAL ACTION
+#Update /etc/default/dump1090-fa config to include --net-ri-port 30001
+#
+#set startup cmd for dump978-fa
+#
+cp /usr/share/dump978-fa/start-dump978-fa /usr/share/dump978-fa/start-dump978-fa.orig 
+#
+#Update /usr/share/dump978-fa/start-dump978-fa to read the following:
+#pi@raspberrypi:~ $ more /usr/share/dump978-fa/start-dump978-fa
+/home/pi/dump978-fa/dump978-fa --sdr driver=rtlsdr,serial=stx:978:0 --raw-stdout | /home/pi/dump978/uat2esnt | nc -q1 localhost 30001
+#
+#install tar1090
+sudo apt-get install -y jq p7zip-full
+git clone https://github.com/wiedehopf/tar1090 ~/tar1090
+#
+#install Wavemon
+sudo apt-get install -y libncurses5 wavemon
