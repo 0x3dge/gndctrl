@@ -1,0 +1,3 @@
+#!/bin/sh
+rtl_sdr -f 978000000 -s 2083334 -g 48 -d 1 -| /home/pi/dump978/dump978 | /home/pi/dump978/uat2esnt | /bin/nc 127.0.0.1 30001
+#/home/pi/dump978-fa/dump978-fa --sdr driver=rtlsdr,serial=stx:978:0 --raw-stdout | /home/pi/dump978/uat2esnt | nc -q1 localhost 30001
