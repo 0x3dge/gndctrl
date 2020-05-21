@@ -78,5 +78,6 @@ sudo restart
 # 30001 is a listener to accept raw input data
 # 30002 is a realtime data output from dump1090
 #
-#
-#
+# References:
+# https://www.adsbexchange.com/how-to-feed/adding-978-mhz-ads-b-capability-to-your-pipi2/
+# 
