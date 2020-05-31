@@ -53,10 +53,10 @@ sudo restart
 # (tar1090 install will fail without a restart after multiple package installs or installing dump1090-fa and dump978)
 git clone https://github.com/wiedehopf/tar1090 tar1090
 cd tar1090
-sudo ./install
+sudo ./install.sh
 #
 #
-#edit tar1090/html/config.js and set default lat/lon,  PageName, 
+#edit /usr/local/share/tar1090/html/config.js and set default lat/lon,  PageName, 
 #create service entry for dump978
 sudo mkdir /usr/share/dump978
 sudo cp /usr/share/dump1090-fa/start-dump1090-fa /usr/share/dump978/start-dump978
