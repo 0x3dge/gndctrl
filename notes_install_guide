@@ -61,6 +61,7 @@ sudo ./install.sh
 sudo mkdir /usr/share/dump978
 sudo cp /usr/share/dump1090-fa/start-dump1090-fa /usr/share/dump978/start-dump978
 sudo cp /lib/systemd/system/dump1090-fa.service /lib/systemd/system/dump978.service
+sudo systemctl enable dump978
 #
 # reboot to update daemon manager w/ new service.  
 sudo restart
